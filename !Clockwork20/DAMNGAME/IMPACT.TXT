@@ -1,8 +1,0 @@
-^YSlideShow^0
-
-Game inspired
-Space Impact
-
-^WA^0 ... play/shot
-^WX^0 .... pause
-^WY^0 ..... quit

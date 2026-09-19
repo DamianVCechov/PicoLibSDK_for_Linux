@@ -51,20 +51,19 @@
 #define uint16_t u16
 #define int16_t s16
 
-#define TINYJOYPAD_LEFT   (!gpio_get(BTN_LEFT_PIN))
-#define TINYJOYPAD_RIGHT (!gpio_get(BTN_RIGHT_PIN))
-#define TINYJOYPAD_DOWN (!gpio_get(BTN_DOWN_PIN))
-#define TINYJOYPAD_UP (!gpio_get(BTN_UP_PIN))
-#define BUTTON_DOWN ((!gpio_get(BTN_B_PIN))||(!gpio_get(BTN_A_PIN)))
-#define BUTTON_UP ((gpio_get(BTN_B_PIN))&&(gpio_get(BTN_A_PIN)))
+// #define TINYJOYPAD_LEFT   (!gpio_get(BTN_LEFT_PIN))
+// #define TINYJOYPAD_RIGHT (!gpio_get(BTN_RIGHT_PIN))
+// #define TINYJOYPAD_DOWN (!gpio_get(BTN_DOWN_PIN))
+// #define TINYJOYPAD_UP (!gpio_get(BTN_UP_PIN))
+// #define BUTTON_DOWN ((!gpio_get(BTN_B_PIN))||(!gpio_get(BTN_A_PIN)))
+// #define BUTTON_UP ((gpio_get(BTN_B_PIN))&&(gpio_get(BTN_A_PIN)))
 
-/* //Too Slow
 #define TINYJOYPAD_LEFT   (KeyPressed(KEY_LEFT))
 #define TINYJOYPAD_RIGHT (KeyPressed(KEY_RIGHT))
 #define TINYJOYPAD_DOWN (KeyPressed(KEY_DOWN))
 #define TINYJOYPAD_UP  (KeyPressed(KEY_UP))
 #define BUTTON_DOWN ((KeyPressed(KEY_A))||(KeyPressed(KEY_B)))
-#define BUTTON_UP ((!KeyPressed(KEY_A))&&(!KeyPressed(KEY_B)))*/
+#define BUTTON_UP ((!KeyPressed(KEY_A))&&(!KeyPressed(KEY_B)))
 
 #define delay(Var_0) WaitMs(Var_0)
 #define _delay_ms(Var_1) WaitMs(Var_1)

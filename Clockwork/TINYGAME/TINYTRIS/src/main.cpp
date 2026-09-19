@@ -29,7 +29,7 @@
 
 
 #include "../include.h"
-extern volatile Bool KeyPressMap[KEY_NUM];
+//extern volatile Bool KeyPressMap[KEY_NUM];
 //public var
 extern uint8_t SnD_;
 extern uint8_t BUFFER_SSD[1024];

@@ -1,3 +1,0 @@
-^YTest Clocks^0
-
-^WY^0 ....... quit

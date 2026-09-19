@@ -1,0 +1,4 @@
+TI-92 emulator for PicoCalc Clockwork RP2350.
+
+Place a legally obtained raw TI-92 ROM image at /ti92.bin on the SD card.
+Supported image sizes in this milestone: 1 MiB (TI-92 I) and 2 MiB (TI-92 II).

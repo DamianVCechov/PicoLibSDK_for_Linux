@@ -14,12 +14,13 @@
 //	It is possible to take and modify the code or parts of it, without restriction.
 
 #include "osdep.h"	// globals
+
 #ifdef USE_ST7789
 #include "../../../_display/st7789/st7789.h"
 #endif
 
-#ifdef USE_ILI9488
-#include "../../../_display/ili9488/ili9488.h"
+#ifdef USE_ST7365P
+#include "../../../_display/st7365p/st7365p.h"
 #endif
 
 // Define reduced height for ZX Spectrum emulator to save RAM
@@ -34,15 +35,11 @@
 // increase this value to shift the drawing coordinate UP.
 #define ZX_ADJUST_Y 40
 
-#ifdef USE_ILI9488
-// Buffer pro jeden řádek v 18-bit barvách (3 byty na pixel)
-u8 LineBufRGB888[WIDTH * 3];
-#endif
-
 // Reduced FrameBuf size: WIDTH * ZX_HEIGHT (320 * 240)
-ALIGNED u16 FrameBuf[(WIDTH * ZX_HEIGHT) / 2];
+// Přejmenováno pro zamezení kolize s FrameBuf z PicoLibSDK
+ALIGNED u16 FrameBufZx_Internal[(WIDTH * ZX_HEIGHT) / 2];
 
-u8 *FrameBufZx = (u8*) FrameBuf;
+u8 *FrameBufZx = (u8*) FrameBufZx_Internal;
 ALIGNED u16 LineBuf[WIDTH];
 
 #define DIRTYTILES 10
@@ -69,19 +66,11 @@ void DispClearReal() {
 	DispWindow(0, WIDTH, 0, HEIGHT);
 
 	// Prepare a black line buffer
-	#ifdef USE_ILI9488
-	memset(LineBufRGB888, 0, WIDTH * 3);
-	#else
 	memset(LineBuf, 0, WIDTH * 2);
-	#endif
 
 	// Write black lines to fill the entire screen
 	for (int i = 0; i < HEIGHT; i++) {
-		#ifdef USE_ILI9488
-		DispWriteData(LineBufRGB888, WIDTH * 3);
-		#else
 		DispWriteData(LineBuf, WIDTH * 2);
-		#endif
 	}
 }
 
@@ -292,7 +281,7 @@ void DispUpdateZx() {
 		}
 	}
 
-	// 2. Vykreslování (ILI9488)
+	// 2. Vykreslování
 	if (nSolid == 1) {
 		// --- CELISTVÝ BLOK ---
 		// Add ZX_OFFSET_Y to center the display window on the physical screen
@@ -302,25 +291,12 @@ void DispUpdateZx() {
 		int width = zxDispDirtyX2 - zxDispDirtyX1;
 
 		for (int i = zxDispDirtyY2 - zxDispDirtyY1; i > 0; i--) {
-			#ifdef USE_ILI9488
-			// PŘEVOD PRO ILI9488 (3 byty na pixel)
-			int bufIdx = 0;
-			for (int nCnt = 0; nCnt < width; nCnt++) {
-				u8 c = s0[nCnt];
-				// RGB332 -> RGB666/888
-				LineBufRGB888[bufIdx++] = (c & 0xE0);       // R
-				LineBufRGB888[bufIdx++] = (c & 0x1C) << 3;  // G
-				LineBufRGB888[bufIdx++] = (c & 0x03) << 6;  // B
-			}
-			DispWriteData(LineBufRGB888, width * 3);
-			#else
-			// PŮVODNÍ PRO ST7789 (2 byty na pixel)
+			// Provedení přehození bajtů pro ST7365P (Big-Endian formát)
 			for (int nCnt = 0; nCnt < width; nCnt++) {
 				u16 color = RGB8TO16(s0[nCnt]);
 				LineBuf[nCnt] = (color << 8) | (color >> 8); // Swap bytes
 			}
 			DispWriteData(LineBuf, width * 2);
-			#endif
 			s0 += WIDTH;
 		}
 	} else {
@@ -336,24 +312,12 @@ void DispUpdateZx() {
 					int width = dirtyTiles[i][j].X2 - dirtyTiles[i][j].X1;
 
 					for (int k = dirtyTiles[i][j].Y2 - dirtyTiles[i][j].Y1; k > 0; k--) {
-						#ifdef USE_ILI9488
-						// PŘEVOD PRO ILI9488 (3 byty na pixel)
-						int bufIdx = 0;
-						for (int nCnt = 0; nCnt < width; nCnt++) {
-							u8 c = s0[nCnt];
-							LineBufRGB888[bufIdx++] = (c & 0xE0);       // R
-							LineBufRGB888[bufIdx++] = (c & 0x1C) << 3;  // G
-							LineBufRGB888[bufIdx++] = (c & 0x03) << 6;  // B
-						}
-						DispWriteData(LineBufRGB888, width * 3);
-						#else
-						// PŮVODNÍ PRO ST7789
+						// Provedení přehození bajtů pro ST7365P (Big-Endian formát)
 						for (int nCnt = 0; nCnt < width; nCnt++) {
 							u16 color = RGB8TO16(s0[nCnt]);
-							LineBuf[nCnt] = (color << 8) | (color >> 8);
+							LineBuf[nCnt] = (color << 8) | (color >> 8); // Swap bytes
 						}
 						DispWriteData(LineBuf, width * 2);
-						#endif
 						s0 += WIDTH;
 					}
 				}

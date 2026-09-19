@@ -13,7 +13,7 @@
 #include "../../../_lib/inc/lib_pwmsnd.h"
 #include "../../../_lib/inc/lib_draw.h"
 #include "../../../_display/st7789/st7789.h"
-#include "../../../_display/ili9488/ili9488.h"
+#include "../../../_display/st7365p/st7365p.h"
 #include "../../../_display/minivga/minivga.h"
 #include "../../../_display/disphstx/disphstx.h"
 #include "../../../_lib/inc/lib_print.h"

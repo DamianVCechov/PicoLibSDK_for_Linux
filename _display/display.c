@@ -40,6 +40,6 @@
 #include "st7789/st7789.c"
 #endif
 
-#if USE_ILI9488
-#include "ili9488/ili9488.c"
+#if USE_ST7365P
+#include "st7365p/st7365p.c":
 #endif

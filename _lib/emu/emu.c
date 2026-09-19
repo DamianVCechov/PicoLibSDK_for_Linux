@@ -110,6 +110,10 @@ void EmuSyncTerm(int pwm)
 #include "emu_m6502.c"		// M6502 CPU
 #endif
 
+#if USE_EMU_M68K		// use Motorola 68000 CPU emulator
+#include "emu_m68k.c"		// Motorola 68000 CPU
+#endif
+
 #if USE_EMU_X80			// use X80 CPU emulator
 #include "emu_x80.c"		// X80 CPU
 #endif

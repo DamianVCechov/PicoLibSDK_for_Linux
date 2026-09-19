@@ -54,8 +54,8 @@
 #define FRAMESIZE 	(WIDTHLEN*HEIGHT) // frame size in number of colors
 #define	DISP_STRIP_NUM	1		// number of back strips
 
-#ifndef USE_ILI9488
-#define USE_ILI9488		1		// use ILI9488 TFT display (ili9488.c, ili9488.h)
+#ifndef USE_ST7365P
+#define USE_ST7365P		1		// use ST7365P TFT display (st7365p.c, st7365p.h)
 #endif
 
 #ifndef USE_DRAW

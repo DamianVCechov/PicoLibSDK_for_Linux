@@ -287,6 +287,10 @@ typedef void (*pEmu32Write32)(u32 addr, u32 data);
 #include "emu_m6502.h"		// M6502 CPU
 #endif
 
+#if USE_EMU_M68K		// use Motorola 68000 CPU emulator
+#include "emu_m68k.h"		// Motorola 68000 CPU
+#endif
+
 #if USE_EMU_X80			// use X80 CPU emulator
 #include "emu_x80.h"		// X80 CPU
 #endif

@@ -35,8 +35,8 @@
 #include "st7789/st7789.h"
 #endif
 
-#ifdef USE_ILI9488
-#include "ili9488/ili9488.h"
+#ifdef USE_ST7365P
+#include "st7365p/st7365p.h"
 #endif
 
 #endif // _DISPLAY_INCLUDE_H

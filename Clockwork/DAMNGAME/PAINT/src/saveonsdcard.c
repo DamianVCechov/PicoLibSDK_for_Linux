@@ -47,10 +47,9 @@ typedef struct {
 	u32	biAlphaMask;		// 0x42: alpha mask = 0x00000000
 					// 0x46
 } sBmp;
-
 #pragma pack(pop)
 */
-/*// BMP file header, 16 bits per pixel
+// BMP file header, 16 bits per pixel
 sBmp BmpHeader = {
 	// BMP file header (size 14 bytes)
 	0x4D42,			// u16	bfType;		// 0x00: magic, 'B' 'M' = 0x4D42
@@ -76,7 +75,7 @@ sBmp BmpHeader = {
 	0x001F,			// u32	biBlueMask;	// 0x3E: blue mask = 0x0000001F
 	0,			// u32	biAlphaMask;	// 0x42: alpha mask = 0x00000000
 							// 0x46
-};*/
+};
 
 void SavePicture()
 {

@@ -59,7 +59,7 @@ void FASTCODE NOFLASH(M6502_Push)(sM6502* cpu, u8 n)
 {
 	u8 sp = cpu->sp;
 	cpu->sp = sp - 1;
-	cpu->stack[sp] = n;
+	cpu->writemem(0x0100 | sp, n); // Zde byla primarni chyba, nyni vynucen zapis pres mapu!
 }
 
 // pop byte from the stack
@@ -67,7 +67,7 @@ u8 FASTCODE NOFLASH(M6502_Pop)(sM6502* cpu)
 {
 	u8 sp = cpu->sp + 1;
 	cpu->sp = sp;
-	return cpu->stack[sp];
+	return cpu->readmem(0x0100 | sp); // Vynuceno cteni pres mapu
 }
 
 // get 16-bit address of X-indexed indirect addressing ... (indirect,X) ... 16-bit address from zero page 8(imm + X)

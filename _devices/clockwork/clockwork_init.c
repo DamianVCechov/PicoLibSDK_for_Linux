@@ -25,7 +25,7 @@
 #include "../../_display/disphstx/disphstx.h"
 #else // USE_PICOPADHSTX
 #include "../../_display/minivga/minivga.h"
-#include "../../_display/ili9488/ili9488.h"
+#include "../../_display/st7365p/st7365p.h"
 #endif // USE_PICOPADHSTX
 #include "../../_lib/inc/lib_fat.h"
 #include "../../_lib/inc/lib_sd.h"

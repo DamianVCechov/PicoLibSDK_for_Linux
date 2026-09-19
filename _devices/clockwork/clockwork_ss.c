@@ -20,7 +20,7 @@
 
 #include "../../_display/minivga/minivga.h"
 #include "../../_display/disphstxmini/disphstxmini.h"
-#include "../../_display/ili9488/ili9488.h"
+#include "../../_display/st7365p/st7365p.h"
 #include "../../_sdk/inc/sdk_timer.h"
 #include "clockwork_init.h"	// initialize
 #include "clockwork_ss.h"

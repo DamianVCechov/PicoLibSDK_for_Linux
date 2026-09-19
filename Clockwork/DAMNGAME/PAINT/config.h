@@ -21,7 +21,7 @@
 //#define USE_USB_STDIO		1		// use USB stdio (UsbPrint function)
 //#define USE_UART_STDIO	1		// use UART stdio (UartPrint function)
 
-#define USE_SCREENSHOT  1			// use screen shots
+// #define USE_SCREENSHOT  1			// use screen shots
 
 //#define USE_USBPORT		1		// use USB Mini-Port (sdk_usbport.c, sdk_usbport.h)
 //#define USE_USB_DEV_CDC	4		// use USB CDC Communication Device Class, value = number of interfaces (device)

@@ -18,6 +18,7 @@
 #define FONTH			16		// height of system font
 
 #define USE_MP3			1	// use MP3 decoder (lib_mp3*.c, lib_mp3*.h)
+#define PWMSND_GPIO     1
 
 #if USE_PICOPADHSTX		// use PicoPadHSTX device configuration
 #define USE_DISPHSTXMINI	0	// 1=use HSTX Display Mini driver

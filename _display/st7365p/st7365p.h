@@ -1,0 +1,203 @@
+// ****************************************************************************
+//
+//                          Display controller ST7365P
+//
+// ****************************************************************************
+// PicoLibSDK - Alternative SDK library for Raspberry Pico and RP2040
+// Copyright (c) 2023 Miroslav Nemecek, Panda38@seznam.cz, hardyplotter2@gmail.com
+// 	https://github.com/Panda381/PicoLibSDK
+//	https://www.breatharian.eu/hw/picolibsdk/index_en.html
+//	https://github.com/pajenicko/picopad
+//	https://picopad.eu/en/
+// License:
+//	This source code is freely available for any purpose, including commercial.
+//	It is possible to take and modify the code or parts of it, without restriction.
+
+// Example how to configure fast output to LCD display and extern VGA-DVI display:
+//#define DISP_SPI_BAUD		50000000	// SPI baudrate (max. CLK_PERI/2 = 24 MHz, absolute max. 62.5 MHz)
+//#define PLL_KHZ		200000		// PLL system frequency in kHz (default 125000 kHz)
+//#define USE_FAST_PERI		1		// use fast perifery - use system clock instead of USB clock
+//#define USE_DISP_DMA		1		// use DMA output do LCD display
+//#define DISP_ROT		1		// display rotation of LCD: 0 Portrait, 1 Landscape, 2 Inverted Portrait, 3 Inverted Landscape
+
+#if USE_ST7365P		// use ST7365P TFT display (st7365p.c, st7365p.h)
+
+#ifndef _ST7365P_H
+#define _ST7365P_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef WIDTH
+#define WIDTH		320		// display width
+#endif
+
+#ifndef HEIGHT
+#define HEIGHT		320		// display height
+#endif
+
+#ifndef COLBITS
+#define COLBITS		16		// number of output color bits
+#endif
+
+#define COLTYPE		u16		// type of color: u8, u16 or u32
+#define FRAMETYPE	u16		// type of frame entry: u8 or u16
+#define WIDTHLEN	WIDTH		// length of one line of one plane, in number of frame elements
+#define FRAMESIZE 	(WIDTHLEN*HEIGHT) // frame size in number of colors
+#define	DISP_STRIP_NUM	1		// number of back strips
+
+#define COLOR_B_BITS	5			// blue color bits
+#define COLOR_G_BITS	6			// greem color bits
+#define COLOR_R_BITS	5			// red color bits
+#define COLOR_B_MASK	0x001F			// blue color mask
+#define COLOR_G_MASK	0x07E0			// green color mask
+#define COLOR_R_MASK	0xF800			// red color mask
+#define COLOR(r,g,b)	((u16)( (((r)&0xf8)<<8) | (((g)&0xfc)<<3) | (((b)&0xf8)>>3) ))
+//#define COLOR(r,g,b) ((u16)( (((g)&0x1c)<<11) | (((b)&0xf8)<<5) | ((r)&0xf8) | (((g)&0xe0)>>5) ))
+
+// backlight control
+#define BACKLIGHT_SLICE	PWM_GPIOTOSLICE(DISP_BLK_PIN) // backlight slice index
+#define BACKLIGHT_CHAN	PWM_GPIOTOCHAN(DISP_BLK_PIN) // backlight channel index
+#define BACKLIGHT_RATE	22050		// backlight rate [Hz] (use the same frequency as the audio output,
+					//	to reduce interference to the audio output)
+#define BACKLIGHT_CLOCK	(BACKLIGHT_RATE*256) // PWM clock (= 22050*256 = 5644800)
+
+#ifndef DISP_OFFSET_X
+#define DISP_OFFSET_X	0		// offset of display controller buffer X
+#endif
+
+#ifndef DISP_OFFSET_Y
+#define DISP_OFFSET_Y	0		// offset of display controller buffer Y
+#endif
+
+// DISP_SPI_BAUD	24000000
+// send data: 320x320x2 = 204800 B = 1 638 400 bits
+// transfer time: 68 ms, real time: 95 ms
+#define DISP_FRAME_MS (320*320*2*9*1000/DISP_SPI_BAUD)	// transfer time of whole frame in [ms]
+
+// frame buffer in RGB 5-6-5 pixel format
+extern ALIGNED FRAMETYPE FrameBuf[];
+
+//extern u16 /*DispWidth,*/ DispHeight; // current display size
+
+#if USE_EMUSCREENSHOT		// use emulator screen shots
+extern volatile Bool DoEmuScreenShot;	// request to do emulator screenshot
+#endif
+
+// dirty window to update
+extern int DispDirtyX1, DispDirtyX2, DispDirtyY1, DispDirtyY2;
+
+// strip of back buffer
+/*
+extern u16* pDrawBuf; 		// current draw buffer
+extern int DispStripInx;	// current index of back buffer strip
+extern int DispMinY;		// minimal Y; base of back buffer strip
+extern int DispMaxY;		// maximal Y + 1; end of back buffer strip
+*/
+#define pDrawBuf FrameBuf	// current draw buffer
+#define DispStripInx  0		// current index of back buffer strip
+#define DispMinY  0		// minimal Y; base of back buffer strip
+#define DispMaxY HEIGHT		// maximal Y + 1; end of back buffer strip
+
+// set display rotation
+//  0 Portrait
+//  1 Landscape
+//  2 Inverted Portrait
+//  3 Inverted Landscape
+void DispRotation(u8 rot);
+
+// set draw window
+void DispWindow(u16 x1, u16 x2, u16 y1, u16 y2);
+
+// LOW level control: start sending image data to display window (DispSendImg() must follow)
+void DispStartImg(u16 x1, u16 x2, u16 y1, u16 y2);
+
+// LOW level control: send one byte of image data to display (follows after DispStartImg())
+void DispSendImg(u8 data);
+
+// LOW level control: send one word of image data to display (follows after DispStartImg())
+void DispSendImg2(u16 data);
+
+// LOW level control: stop sending image data (follows after DispStartImg() and DispSendImg())
+void DispStopImg();
+
+// set strip of back buffer (-1 = use full FrameBuffer)
+INLINE void DispSetStrip(int inx) {}
+INLINE void DispSetStripNext() {}
+
+// switch off the back buffer, use only frame buffer to output
+INLINE void DispSetStripOff() {}
+
+// load back buffer from frame buffer
+INLINE void DispLoad() {}
+
+// set dirty all frame buffer
+void DispDirtyAll();
+
+// set dirty none (clear after update)
+void DispDirtyNone();
+
+// update dirty area by rectangle (check valid range)
+void DispDirtyRect(int x, int y, int w, int h);
+
+// update dirty area by pixel (check valid range)
+void DispDirtyPoint(int x, int y);
+
+// update - send dirty window to display
+void DispUpdate();
+
+// auto update after delta time in [ms] of running program
+void DispAutoUpdate(u32 ms);
+
+// refresh update all display
+void DispUpdateAll();
+
+// display backlight control
+void DispBacklight(u8 backlight);
+
+// display backlight control config update
+void DispBacklightUpdate();
+
+// initialize display
+//  rot ... rotation mode
+//		0 Portrait
+//		1 Landscape
+//		2 Inverted Portrait
+//		3 Inverted Landscape
+void DispInit(u8 rot);
+
+// terminate display
+void DispTerm();
+
+// wait for VSync scanline
+INLINE void VgaWaitVSync() {}
+
+// Direct draw text to display with current selected font
+//  text ... text to display (must not exceed display width)
+//  x ... start X position
+//  y ... start Y position
+//  w1 ... left margin (number of pixels with background color)
+//  w2 ... right margin (number of pixels with background color)
+//  col ... foreground color
+//  bgcol ... background color
+void DispDrawText(const char* text, int x, int y, int w1, int w2, u16 col, u16 bgcol);
+
+// Direct draw text row to display with current selected font
+//  text ... text to display (must not exceed display width)
+//  x ... start X position
+//  y ... start Y position
+//  col ... foreground color
+//  bgcol ... background color
+void DispDrawTextRow(const char* text, int x, int y, u16 col, u16 bgcol);
+
+// write data to display
+void DispWriteData(const void* data, int len);
+#ifdef __cplusplus
+}
+
+#endif
+
+#endif // _ST7365P_H
+
+#endif // USE_ST7365P		// use ST7365P TFT display (st7365p.c, st7365p.h)

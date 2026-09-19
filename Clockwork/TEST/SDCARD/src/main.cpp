@@ -250,7 +250,6 @@ int main()
 		}
 
 		// update display and wait 1 second
-		LedFlip(LED1);
 		DispUpdate();
 
 #if USE_PICOPADVGA

@@ -182,6 +182,11 @@ void NewLoop()
 
 int main()
 {
+    DeviceInit();
+    GPIO_Init(16);     // Přepne pin 16 zpět na standardní softwarové GPIO
+	GPIO_DirOut(16);   // Nastaví pin 16 jako výstupní
+	GPIO_Out1(16);     // Zapne podsvícení naplno (HIGH)
+
 #if !USE_PICOPADHSTX		// use PicoPadHSTX device configuration
 	ClockPllSysFreqVolt(200000);
 #endif
