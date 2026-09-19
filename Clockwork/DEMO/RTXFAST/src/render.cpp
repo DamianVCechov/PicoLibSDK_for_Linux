@@ -26,9 +26,12 @@ float FloorPos = 0;	// floor position
 #define TOOFAR 1e3
 #define DEPTHMAX 1			// max. depth of trace
 
-// Buffer for RGB888 (3 bytes per pixel)
-// Aligned to 4 bytes for DMA safety
-u8 DispBuf[WIDTH * HEIGHT * 3] __attribute__((aligned(4)));
+// FrameBuf is sent by the fast byte-wide DMA path. The ST7365P expects the
+// most significant RGB565 byte first, so store pixels byte-swapped in memory.
+INLINE u16 DispColor(int red, int green, int blue)
+{
+	return ENDIAN16(COLOR(red, green, blue));
+}
 
 // trace ray
 void FASTCODE NOFLASH(Trace)(V3* rgb, const V3 &orig, const V3 &dir, int depth, const Sphere* disable)
@@ -134,26 +137,21 @@ void FASTCODE NOFLASH(Trace)(V3* rgb, const V3 &orig, const V3 &dir, int depth, 
 // render image
 void FASTCODE NOFLASH(Render3D)()
 {
+	// local variables
 	int tmp;
-	int x, y;
-	float xx, yy;
-	V3 rgbV;
+	int x, y;			// current X and Y coordinates in bitmap
+	float xx, yy;		// current X and Y coordinates in viewing plane
+	V3 rgbV;			// result pixel color as vector 0..1
 	V3 dir;
-	float fov = 45*PI/180;
-	float tfov = (float)tanf(fov/2);
-	float ar = WIDTH/(float)HEIGHT;
+	float fov = 45*PI/180; // field of view in degrees
+	float tfov = (float)tanf(fov/2); // height/2 of viewing plane
+	float ar = WIDTH/(float)HEIGHT; // aspect ratio
 	int red, green, blue;
 	int redold, greenold, blueold;
 
-	// Core 0 starts at the last line, Core 1 one line before
-	// (Loop goes from High Y to Low Y in 3D space)
+	// Both cores render alternating scanlines directly to the RGB565 frame buffer.
+	u16* dst = &FrameBuf[(CpuID() == 0) ? 0 : WIDTH];
 	y = (CpuID() == 0) ? (HEIGHT-1) : (HEIGHT-2);
-
-	// XAVER OPRAVA: Inverze Y osy pro buffer (Flip Vertical).
-	// Když je 'y' vysoko (vršek 3D scény), zapisujeme na adresu 0 (vršek displeje).
-	// Výpočet: (HEIGHT - 1 - y) * WIDTH * 3
-	u8* dst = &DispBuf[(HEIGHT - 1 - y) * WIDTH * 3];
-
 	for (; y >= 0; y -= 2)
 	{
 		x = 0;
@@ -166,15 +164,13 @@ void FASTCODE NOFLASH(Render3D)()
 
 		Trace(&rgbV, Camera, dir, 0, NULL);
 
-		// convert float RGB to integer 0..255
-		tmp = (int)(rgbV.x*255 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; red = tmp;
-		tmp = (int)(rgbV.y*255 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; green = tmp;
-		tmp = (int)(rgbV.z*255 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; blue = tmp;
+		// convert vector to RGB pixel
+		tmp = (int)(rgbV.x*256 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; red = tmp;
+		tmp = (int)(rgbV.y*256 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; green = tmp;
+		tmp = (int)(rgbV.z*256 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; blue = tmp;
 
-		// Zápis RGB888
-		*dst++ = (u8)red;
-		*dst++ = (u8)green;
-		*dst++ = (u8)blue;
+		*dst++ = DispColor(red, green, blue);
+		*dst++ = DispColor(red, green, blue);
 
 		redold = red; greenold = green; blueold = blue;
 
@@ -187,32 +183,17 @@ void FASTCODE NOFLASH(Render3D)()
 
 			Trace(&rgbV, Camera, dir, 0, NULL);
 
-			tmp = (int)(rgbV.x*255 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; red = tmp;
-			tmp = (int)(rgbV.y*255 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; green = tmp;
-			tmp = (int)(rgbV.z*255 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; blue = tmp;
+			tmp = (int)(rgbV.x*256 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; red = tmp;
+			tmp = (int)(rgbV.y*256 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; green = tmp;
+			tmp = (int)(rgbV.z*256 + 0.5); if (tmp < 0) tmp = 0; if (tmp > 255) tmp = 255; blue = tmp;
 
-			// Interpolated pixel
-			int r_avg = (red + redold) >> 1;
-			int g_avg = (green + greenold) >> 1;
-			int b_avg = (blue + blueold) >> 1;
-			
-			*dst++ = (u8)r_avg;
-			*dst++ = (u8)g_avg;
-			*dst++ = (u8)b_avg;
-
-			// Current pixel
-			*dst++ = (u8)red;
-			*dst++ = (u8)green;
-			*dst++ = (u8)blue;
+			*dst++ = DispColor((red+redold)>>1, (green+greenold)>>1, (blue+blueold)>>1);
+			*dst++ = DispColor(red, green, blue);
 
 			redold = red; greenold = green; blueold = blue;
 		}
 
-		// XAVER OPRAVA: Posun pointeru v bufferu.
-		// Protože 'y' se zmenšuje (jdeme dolů v 3D), v bufferu jdeme nahoru (další řádky displeje).
-		// Musíme přepočítat adresu pro (y - 2).
-		if (y >= 2) {
-			dst = &DispBuf[(HEIGHT - 1 - (y - 2)) * WIDTH * 3];
-		}
+		// Skip the scanline rendered by the other core.
+		dst += WIDTH;
 	}
 }

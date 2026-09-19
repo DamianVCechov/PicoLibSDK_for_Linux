@@ -39,15 +39,9 @@ void FASTCODE NOFLASH(DispUpdateStartDMA)()
 	// configure DMA
 	DMA_Abort(dma); // abort current transfer
 	DMA_ClearError_hw(hwdma); // clear errors
-	
-	// XAVER OPRAVA: Místo SDK FrameBufu použijeme náš DispBuf
-	DMA_SetRead_hw(hwdma, DispBuf); // set source address
-	
+	DMA_SetRead_hw(hwdma, FrameBuf); // set source address
 	DMA_SetWrite_hw(hwdma, &hw->dr); // set destination address
-	
-	// XAVER OPRAVA: Počet bajtů k přenosu (pro 24-bit barvy)
-	DMA_SetCount_hw(hwdma, HEIGHT * WIDTH * 3); // set count of elements
-	
+	DMA_SetCount_hw(hwdma, FRAMESIZE*2); // set count of elements
 	cb(); // compiler barrier
 	DMA_SetCtrlTrig_hw(hwdma,
 		DMA_CTRL_TREQ(SPI_GetDreq_hw(hw, True)) |
@@ -137,10 +131,7 @@ int FASTCODE NOFLASH(main)()
 		// FPS
 		t2 = Time();
 		MemPrint(buf, 20, "%.2f ", 1000000.0/(t2-t));
-		
-		// Protože na displej posíláme DispBuf (u8), FPS se nezobrazí!
 		DispDrawText(buf, 0, 0, 0, 0, COL_WHITE, COL_BLACK);
-		
 		WaitMs(100);
 		t = Time();
 #endif
