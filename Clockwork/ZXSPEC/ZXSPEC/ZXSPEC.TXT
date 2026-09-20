@@ -1,0 +1,12 @@
+^YZXSPEC^0
+
+ZX Spectrum 48K/128K
+emulator with AY sound.
+Loads Z80, SNA and TAP.
+
+^WX^0 .... emulator menu
+^WB^0 .... fast save
+^WY^0 .... fast load
+^WARROWS,A,B,Y^0 ... keys
+
+USB keyboard supported.

@@ -1,0 +1,12 @@
+^YQR Code Generator^0
+
+Creates QR codes from text
+entered with the keyboard.
+
+^WARROWS^0 ... select key
+^WA^0 ....... enter key
+^WB^0 ....... new line
+^WX^0 ....... create QR
+^WY^0 ....... quit
+
+USB keyboard supported.

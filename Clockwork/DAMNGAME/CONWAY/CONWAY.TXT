@@ -1,0 +1,14 @@
+^YConway's Game of Life^0
+
+Dual-core cellular
+automaton simulation.
+RLE import, SD save/load,
+undo and age colors.
+
+^WARROWS^0 ... move cursor
+^WA^0 ....... toggle cell
+^WB^0 ....... play/pause
+^WX^0 ....... main menu
+^WY^0 ....... quit
+
+USB keyboard supported.
