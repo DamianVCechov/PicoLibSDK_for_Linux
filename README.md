@@ -38,6 +38,7 @@ EMU/A2600         - My attempt at an Atari 2600 emulator. (Incompleted, Unfinish
 EMU/TI92          - Texas Instruments TI-92 calculator emulator (not Plus!) with M68000 processor. 
                     Fully functional. (not tested on RP2040) Upload the ROM of the calculator to 
                     the root of the SD card with the name ti92.bin. I'm not allowed to share a ROM.
+ZXSPEC/ZXSPEC     - Modification and optimization of the ZX Spectra emulator from https://github.com/tmilata/ZXSpect
 
 The screen backlight control does not work in the loader, because Picocalc Clockwork does not control it from the Rpi Pico pin, but from the Atmel processor controlling the keyboard.
 
