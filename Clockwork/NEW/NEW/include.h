@@ -12,4 +12,3 @@
 #include INCLUDES_H		// all includes
 
 #include "src/main.h"		// main code
-#include "src/image_data.h"

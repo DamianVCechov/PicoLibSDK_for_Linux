@@ -50,9 +50,23 @@
 
 #define ST7365P_PTLAR		0x30
 #define ST7365P_VSCRDEF		0x33
+#define ST7365P_TEON		0x35	// tearing effect line on
 #define ST7365P_COLMOD		0x3A	// set color mode (data COLOR_MODE_*)
 #define ST7365P_MADCTL		0x36	// set rotation mode (data RotationTab)
 #define ST7365P_VSCSAD		0x37
+
+#define ST7365P_FRMCTR1		0xB1	// frame rate control
+#define ST7365P_INVCTR		0xB4	// display inversion control
+#define ST7365P_ETMOD		0xB7	// entry mode set
+#define ST7365P_CECTRL1		0xB9	// color enhancement control
+#define ST7365P_PWCTR1		0xC0	// power control 1
+#define ST7365P_PWCTR2		0xC1	// power control 2
+#define ST7365P_PWCTR3		0xC2	// power control 3
+#define ST7365P_VMCTR1		0xC5	// VCOM control
+#define ST7365P_DGAMCTRL	0xE8	// display gamma control
+#define ST7365P_PGAMCTRL	0xE0	// positive gamma control
+#define ST7365P_NGAMCTRL	0xE1	// negative gamma control
+#define ST7365P_CMD2EN		0xF0	// command-set control
 
 #define ST7365P_MADCTL_MY	0x80	// B7: page address order (0=top to bottom, 1=bottom to top)
 #define ST7365P_MADCTL_MX	0x40	// B6: column address order (0=left to right, 1=right to left)
@@ -492,8 +506,10 @@ void DispInit(u8 rot)
 {
 	// SPI initialize
 	SPI_Init(DISP_SPI, DISP_SPI_BAUD);
-	SPI_Pol(DISP_SPI, 1); // polarity 1
-	SPI_Phase(DISP_SPI, 1); // phase 1
+	// ST7365P uses SPI mode 0. Sampling on the mode-3 edge can appear to work
+	// while corrupting display commands or pixel data at higher clock rates.
+	SPI_Pol(DISP_SPI, 0);
+	SPI_Phase(DISP_SPI, 0);
 
 	// setup backlight PWM
 	PWM_Reset(BACKLIGHT_SLICE);
@@ -529,30 +545,72 @@ void DispInit(u8 rot)
 	DispHardReset();	// hard reset
 	DispSoftReset();	// soft reset
 	DispSleepDisable();	// disable sleep mode
+	WaitMs(500);
 
-	// (Záměrně odstraněno nastavování registru RAMCTRL 0xB0, pro ST7365P působí problémy)
+	// Native ST7365P panel setup used by working PicoCalc implementations.
+	// The upper COLMOD field selects the internal/RGB path, while the lower
+	// field selects the MCU (SPI) pixel stream. 0x65 keeps the SPI stream RGB565.
+	static const u8 cmd2_c3[] = { 0xC3 };
+	static const u8 cmd2_96[] = { 0x96 };
+	static const u8 frame_rate[] = { 0xA0 };
+	// The PicoCalc panel uses 2-dot inversion. This balances the LCD drive
+	// polarity more evenly than the previous default and reduces image sticking
+	// that is most visible on middle gray levels.
+	static const u8 inversion[] = { 0x02 };
+	static const u8 entry_mode[] = { 0xC6 };
+	static const u8 color_enhance[] = { 0x02, 0xE0 };
+	static const u8 power1[] = { 0x80, 0x06 };
+	static const u8 power2[] = { 0x15 };
+	static const u8 power3[] = { 0xA7 };
+	static const u8 vcom[] = { 0x04 };
+	static const u8 display_gamma[] = { 0x40, 0x8A, 0x00, 0x00, 0x29, 0x19, 0xAA, 0x33 };
+	static const u8 positive_gamma[] = {
+		0xF0, 0x06, 0x0F, 0x05, 0x04, 0x20, 0x37,
+		0x33, 0x4C, 0x37, 0x13, 0x14, 0x2B, 0x31
+	};
+	static const u8 negative_gamma[] = {
+		0xF0, 0x11, 0x1B, 0x11, 0x0F, 0x0A, 0x37,
+		0x43, 0x4C, 0x37, 0x13, 0x13, 0x2C, 0x32
+	};
+	static const u8 tear_mode[] = { 0x00 };
 
-	DispColorMode(COLOR_MODE_65K | COLOR_MODE_16BIT); // set color mode to RGB 16-bit 565
-	WaitMs(50);
-	DispRotation(rot);	// set rotation mode
-	
-	// Pokud obraz vypadá barevně správně, ale jako fotonegativ, změň tento řádek na: DispInvDisable();
-	DispInvEnable();	
-	WaitMs(10);
-
-	DispBacklightUpdate();	// update backlight
+	DispWriteCmdData(ST7365P_CMD2EN, cmd2_c3, count_of(cmd2_c3));
+	DispWriteCmdData(ST7365P_CMD2EN, cmd2_96, count_of(cmd2_96));
+	DispRotation(rot);
+	DispColorMode(0x65);
+	DispWriteCmdData(ST7365P_FRMCTR1, frame_rate, count_of(frame_rate));
+	DispWriteCmdData(ST7365P_INVCTR, inversion, count_of(inversion));
+	DispWriteCmdData(ST7365P_ETMOD, entry_mode, count_of(entry_mode));
+	DispWriteCmdData(ST7365P_CECTRL1, color_enhance, count_of(color_enhance));
+	DispWriteCmdData(ST7365P_PWCTR1, power1, count_of(power1));
+	DispWriteCmdData(ST7365P_PWCTR2, power2, count_of(power2));
+	DispWriteCmdData(ST7365P_PWCTR3, power3, count_of(power3));
+	DispWriteCmdData(ST7365P_VMCTR1, vcom, count_of(vcom));
+	DispWriteCmdData(ST7365P_DGAMCTRL, display_gamma, count_of(display_gamma));
+	DispWriteCmdData(ST7365P_PGAMCTRL, positive_gamma, count_of(positive_gamma));
+	DispWriteCmdData(ST7365P_NGAMCTRL, negative_gamma, count_of(negative_gamma));
+	DispWriteCmdData(ST7365P_CMD2EN, cmd2_c3, count_of(cmd2_c3));
+	DispWriteCmdData(ST7365P_CMD2EN, cmd2_96, count_of(cmd2_96));
+	DispInvEnable();
+	DispWriteCmdData(ST7365P_TEON, tear_mode, count_of(tear_mode));
+	DispSleepDisable();
+	WaitMs(120);
 
 	// clear display
 #if USE_FRAMEBUF	// use default display frame buffer
 	int i;
 	for (i = 0; i < FRAMESIZE; i++) FrameBuf[i] = 0;
-	DispUpdateAll();	// update all display (for 1st time to avoid display flickering)
+	DispUpdateAll();	// clear controller GRAM while the panel is still off
 	DispWriteCmd(ST7365P_DISPON); // enable display
-	DispUpdateAll();	// update all display
+	WaitMs(120);
+	DispUpdateAll();	// refresh once after display-on
 #else
 	DispDirtyNone();
 	DispWriteCmd(ST7365P_DISPON); // enable display
+	WaitMs(120);
 #endif // USE_FRAMEBUF
+
+	DispBacklightUpdate();	// enable backlight only after the first complete clear
 }
 
 // terminate display

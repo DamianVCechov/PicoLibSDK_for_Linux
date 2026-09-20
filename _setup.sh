@@ -112,9 +112,9 @@ case "$1" in
 	export DEVDIR="!Clockwork20riscv"
 	;;
      *) 
-	export DEVICE="picopad10"
-	export DEVCLASS="picopad"
-	export DEVDIR="!PicoPad10"
+	export DEVICE="clockwork20"
+	export DEVCLASS="clockwork"
+	export DEVDIR="!Clockwork20"
 	;;
 esac
 
