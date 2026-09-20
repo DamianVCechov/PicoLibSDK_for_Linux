@@ -8,6 +8,8 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
+#define LED1_PIN    2
+
 // format: 4-bit paletted pixel graphics
 // image width: 1760 pixels
 // image height: 96 lines

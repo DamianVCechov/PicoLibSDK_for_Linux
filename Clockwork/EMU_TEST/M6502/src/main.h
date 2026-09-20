@@ -8,6 +8,8 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
+#define LED1_PIN    2
+
 // format: 4-bit paletted pixel graphics
 // image width: 1760 pixels
 // image height: 96 lines
@@ -15,6 +17,7 @@
 extern const u16 DigitsImg_Pal[16] __attribute__ ((aligned(4)));
 extern const u8 DigitsImg[84480] __attribute__ ((aligned(4)));
 
+#define LED1_PIN    2
 #define DIG_WALL	1760	// width of digit image
 #define DIG_Y		(FONTH*2+16) // Y coordinate of the digits
 #define DIG_W		32	// width of one digit
