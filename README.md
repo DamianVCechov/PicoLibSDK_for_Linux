@@ -27,24 +27,32 @@ Implementation of Picocalc Clockwork. 320×320 display driver and ST7365p contro
 but many of them will work on Pico RP2040 as well.
 I have modified the vast majority of the original programs for Picopad. My programs and tests and experimentation are in the DAMNGAME directory.
 
-DAMNGAME/CHESS    - Modified and Extended Version of Chess Game by Panda38
-DAMNGAME/CONWAY   - Conway's Game of Life. I tried to optimize for the hardware as much as possible.
-DAMNGANE/GBCHEAT  - Enhanced Panda38's GameBoy emulator about entering GameGenie cheats
-DAMNGAME/IMPACT   - Simple Space Impact Pattern Game for Nokia. (Unfinished)
-DAMNGAME/PAINT    - My first attempt at the program. Very simple painting.
-DAMNGAME/QR-CODES - Program generating a QR code from the entered text
-DAMNGAME/SINC     - 3D projection of the cardinal sinus graph
-EMU/A2600         - My attempt at an Atari 2600 emulator. (Incompleted, Unfinished)
-EMU/TI92          - Texas Instruments TI-92 calculator emulator (not Plus!) with M68000 processor. 
-                    Fully functional. (not tested on RP2040) Upload the ROM of the calculator to 
-                    the root of the SD card with the name ti92.bin. I'm not allowed to share a ROM.
-ZXSPEC/ZXSPEC     - Modification and optimization of the ZX Spectra emulator from https://github.com/tmilata/ZXSpect
+#### DAMNGAME/CHESS    
+            - Modified and Extended Version of Chess Game by Panda38
+#### DAMNGAME/CONWAY   
+            - Conway's Game of Life. I tried to optimize for the hardware as much as possible. Many features.
+#### DAMNGANE/GBCHEAT  
+            - Enhanced Panda38's GameBoy emulator about entering GameGenie cheats
+#### DAMNGAME/IMPACT   
+            - Simple Space Impact Pattern Game for Nokia. (Unfinished)
+#### DAMNGAME/PAINT    
+            - My first attempt at the program. Very simple painting.
+#### DAMNGAME/QR-CODES 
+            - Program generating a QR code from the entered text
+#### DAMNGAME/SINC     
+            - 3D projection of the cardinal sinus graph
+#### EMU/A2600         
+            - My attempt at an Atari 2600 emulator. (Incompleted, Unfinished)
+#### EMU/TI92          
+            - Texas Instruments TI-92 calculator emulator (not Plus!) with M68000 processor. 
+              Fully functional. (not tested on RP2040) Upload the ROM of the calculator to 
+              the root of the SD card with the name ti92.bin. I'm not allowed to share a ROM.
+#### ZXSPEC/ZXSPEC     
+            - Modification and optimization of the ZX Spectra emulator from https://github.com/tmilata/ZXSpect
 
-The screen backlight control does not work in the loader, because Picocalc Clockwork does not control it from the Rpi Pico pin, but from the Atmel processor controlling the keyboard.
+The screen backlight control does not work in the loader, because Picocalc Clockwork does not control it from the Rpi Pico pin, 
+but from the Atmel processor controlling the keyboard.
 
-## Contributing
-
-Information on how to contribute to the project.
 
 ## License
 
